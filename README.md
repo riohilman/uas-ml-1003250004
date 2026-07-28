@@ -56,7 +56,7 @@ uas-ml-1003250004/
 1. **Python** ≥ 3.10 terinstal.
 2. **Git** terinstal.
 3. **Kaggle API Token** (untuk mendownload dataset otomatis):
-   - Login ke [Kaggle](https://www.kaggle.com/) → Akun → **"Create New API Token"**.
+   - Login ke [Kaggle](https://www.kaggle.com/) → Akun → **"Create Legacy API Key"**.
    - Download `kaggle.json` dan simpan di:
      - **Mac/Linux**: `~/.kaggle/kaggle.json`
      - **Windows**: `C:\Users\<username>\.kaggle\kaggle.json`
