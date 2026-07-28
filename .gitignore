@@ -1,0 +1,24 @@
+# Artefak yang bisa dihasilkan ulang
+data/
+models/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# File sementara
+*.log
+*.tmp
+.DS_Store
+
+# File model
+*.joblib
+*.pkl
+*.pickle
