@@ -29,25 +29,25 @@ Dataset ini berisi informasi kendaraan bekas dari berbagai merek, lokasi, tahun,
 ---
 
 ## 📁 Struktur Proyek
+```text
 uas-ml-1003250004/
-├── src/ # Kode training & EDA
-│ ├── load_data.py # Download dataset dari Kaggle + load
-│ ├── eda.py # Eksplorasi data & generate grafik
-│ ├── train.py # Training & evaluasi dengan CV
-│ └── evaluate.py # Evaluasi final pada test set
-├── app/ # Kode serving (FastAPI)
-│ └── main.py # API endpoint prediksi
-├── tests/ # Test otomatis (pytest)
-│ └── test_api.py # 7+ test (mekanis & behavioral)
-├── data/ # Dataset (dihasilkan, masuk .gitignore)
-├── models/ # Artefak model (dihasilkan, masuk .gitignore)
-├── reports/ # Grafik EDA & evaluasi
-├── requirements.txt # Dependensi training (versi fleksibel)
+├── src/                 # Kode training & EDA
+│   ├── load_data.py     # Download dataset dari Kaggle + load
+│   ├── eda.py           # Eksplorasi data & generate grafik
+│   ├── train.py         # Training & evaluasi dengan CV
+│   └── evaluate.py      # Evaluasi final pada test set
+├── app/                 # Kode serving (FastAPI)
+│   └── main.py          # API endpoint prediksi
+├── tests/               # Test otomatis (pytest)
+│   └── test_api.py      # 7+ test (mekanis & behavioral)
+├── data/                # Dataset (dihasilkan, masuk .gitignore)
+├── models/              # Artefak model (dihasilkan, masuk .gitignore)
+├── reports/             # Grafik EDA & evaluasi
+├── requirements.txt     # Dependensi training (versi fleksibel)
 ├── requirements-api.txt # Dependensi serving (versi di-pin persis)
-├── .gitignore # Abaikan data/, models/, dll.
-└── README.md # Dokumentasi proyek (file ini)
-
-text
+├── .gitignore           # Abaikan data/, models/, dll.
+└── README.md            # Dokumentasi proyek (file ini)
+```
 
 ---
 
@@ -68,55 +68,84 @@ text
 
 Ikuti langkah-langkah berikut - penguji dapat mereproduksi seluruh sistem tanpa bertanya kepada Anda.
 
-### 1. Clone Repositori
+1. Clone repositori
+
+   ```bash
+   git clone https://github.com/riohilman/uas-ml-1003250004.git
+   cd uas-ml-1003250004
+   ```
+
+2. Buat dan aktifkan virtual environment
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate        # Windows: .venv\Scripts\activate
+   ```
+
+3. Install dependensi training
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Download dataset secara otomatis dari Kaggle
+
+   ```bash
+   python src/load_data.py
+   ```
+
+   Skrip ini akan mendownload dan mengekstrak train-data.csv dan test-data.csv ke folder data/. Jika file sudah ada, download dilewati.
+
+5. Jalankan EDA untuk menghasilkan grafik
+
+   ```bash
+   python src/eda.py
+   ```
+
+   Grafik akan tersimpan di folder reports/ sebagai PNG.
+
+6. Latih model dan simpan artefak
+
+   ```bash
+   python src/train.py
+   ```
+
+   Model pipeline utuh akan tersimpan di models/model_regresi.joblib dan metadata di models/metadata.json.
+
+7. Evaluasi model pada test set
+
+   ```bash
+   python src/evaluate.py
+   ```
+
+   Metrik dan grafik evaluasi akan tersimpan di reports/.
+
+8. Jalankan server API untuk serving
+
+   Pastikan dependensi serving terinstal.
+
+   ```bash
+   pip install -r requirements-api.txt   # Jika belum terinstal
+   uvicorn app.main:app --reload --port 8100
+   ```
+
+   Server akan berjalan di http://localhost:8100. Buka Swagger UI di http://localhost:8100/docs.
+
+9. Jalankan test otomatis
+
+    Buka terminal baru (atau hentikan server dengan Ctrl+C), lalu:
+
+    ```bash
+    python -m pytest tests/ -v
+    ```
+
+    Pastikan semua test berwarna hijau (PASSED).
+
+### Contoh Pemanggilan API (curl)
+
+#### Prediksi Berhasil (HTTP 200)
+
 ```bash
-git clone https://github.com/riohilman/uas-ml-1003250004.git
-cd uas-ml-1003250004
-2. Buat & Aktifkan Virtual Environment
-bash
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-3. Install Dependensi Training
-bash
-pip install -r requirements.txt
-4. Download Dataset (Otomatis dari Kaggle)
-bash
-python src/load_data.py
-Skrip ini akan mendownload dan mengekstrak train-data.csv dan test-data.csv ke folder data/. Jika file sudah ada, download dilewati.
-
-5. Jalankan EDA (Hasilkan Grafik)
-bash
-python src/eda.py
-Grafik akan tersimpan di folder reports/ sebagai PNG.
-
-6. Latih Model & Simpan Artefak
-bash
-python src/train.py
-Model pipeline utuh akan tersimpan di models/model_regresi.joblib dan metadata di models/metadata.json.
-
-7. Evaluasi Model pada Test Set
-bash
-python src/evaluate.py
-Metrik dan grafik evaluasi akan tersimpan di reports/.
-
-8. Jalankan Server API (untuk Serving)
-Penting: Gunakan environment terpisah atau pastikan dependensi serving terinstal.
-
-bash
-pip install -r requirements-api.txt   # Jika belum terinstal
-uvicorn app.main:app --reload --port 8100
-Server akan berjalan di http://localhost:8100. Buka Swagger UI di http://localhost:8100/docs.
-
-9. Jalankan Test Otomatis
-Buka terminal baru (atau hentikan server dengan Ctrl+C), lalu:
-
-bash
-python -m pytest tests/ -v
-Pastikan semua test berwarna hijau (PASSED).
-
-🧪 Contoh Pemanggilan API (curl)
-✅ Prediksi Berhasil (HTTP 200)
-bash
 curl -X POST http://localhost:8100/predict-harga \
   -H "Content-Type: application/json" \
   -d '{
@@ -132,17 +161,22 @@ curl -X POST http://localhost:8100/predict-harga \
     "Location": "Pune",
     "Brand": "Hyundai"
   }'
+```
+
 Response yang diharapkan:
 
-json
+```json
 {
   "predicted_price": 12.35,
   "message": "Success"
 }
-❌ Request Tidak Valid (HTTP 422)
+```
+
+#### Request Tidak Valid (HTTP 422)
+
 Input dengan Fuel_Type tidak dikenal akan ditolak oleh validasi Pydantic.
 
-bash
+```bash
 curl -X POST http://localhost:8100/predict-harga \
   -H "Content-Type: application/json" \
   -d '{
@@ -152,9 +186,11 @@ curl -X POST http://localhost:8100/predict-harga \
     "Transmission": "Manual",
     "Owner_Type": "First"
   }'
+```
+
 Response yang diharapkan (422 Unprocessable Entity):
 
-json
+```json
 {
   "detail": [
     {
@@ -165,7 +201,10 @@ json
     }
   ]
 }
-🧪 Test Otomatis (pytest)
+```
+
+### Test Otomatis (pytest)
+
 Terdapat minimal 7 test yang mencakup:
 
 4 test mekanis (health check, root, prediksi valid, error handling 422).
@@ -174,11 +213,13 @@ Terdapat minimal 7 test yang mencakup:
 
 Jalankan dengan:
 
-bash
+```bash
 python -m pytest tests/ -v
+```
+
 Hasil yang diharapkan:
 
-text
+```text
 tests/test_api.py::test_health PASSED
 tests/test_api.py::test_root PASSED
 tests/test_api.py::test_predict_valid PASSED
@@ -187,6 +228,7 @@ tests/test_api.py::test_predict_invalid_enum PASSED
 tests/test_api.py::test_older_car_cheaper PASSED
 tests/test_api.py::test_higher_mileage_cheaper PASSED
 ==================== 7 passed in X.XXs ====================
+```
 📌 Catatan Penting 
 1. Mengapa data/ dan models/ Dimasukkan ke .gitignore?
 Folder data/ dan models/ berisi artefak yang ukurannya besar (dataset dan file model) dan dapat dihasilkan ulang kapan saja oleh kode. Jika artefak ini ikut dikomit ke Git:
