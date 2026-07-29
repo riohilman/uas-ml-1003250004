@@ -64,5 +64,16 @@ plt.savefig('reports/evaluation_residuals.png', dpi=150)
 plt.close()
 
 # Simpan metrik ke file
-with open('reports/evaluation_metrics.txt', 'w') as f:
-    f.write(f"MAE: {mae:.3f}\nRMSE: {rmse:.3f}\nR²: {r2:.3f}")
+with open('reports/evaluation_metrics.txt', 'w', encoding='utf-8') as f:
+    f.write(f"MAE: {mae:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}\n")
+
+# --- Analisis 5 kesalahan terburuk (dihitung dari test set, bukan manual) ---
+error_df = X_test.copy()
+error_df['Actual'] = y_test.values
+error_df['Predicted'] = np.round(y_pred, 2)
+error_df['Abs_Error'] = (error_df['Actual'] - error_df['Predicted']).abs()
+worst5 = error_df.sort_values('Abs_Error', ascending=False).head(5)
+worst5_cols = ['Brand', 'Year', 'Kilometers_Driven', 'Fuel_Type', 'Actual', 'Predicted', 'Abs_Error']
+worst5[worst5_cols].to_csv('reports/worst5_errors.csv', index=True)
+print("\n5 kesalahan terburuk pada test set:")
+print(worst5[worst5_cols].to_string())

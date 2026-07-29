@@ -30,12 +30,30 @@ def download_kaggle_dataset():
     
     print(f"Dataset berhasil disalin ke {DATA_DIR}/")
 
+def print_dataset_info(df, name):
+    print(f"\n=== Info dataset: {name} ===")
+    print(f"Jumlah baris  : {df.shape[0]}")
+    print(f"Jumlah kolom  : {df.shape[1]}")
+    print("\nTipe tiap kolom:")
+    print(df.dtypes)
+    print("\nJumlah nilai hilang per kolom:")
+    missing = df.isna().sum()
+    print(missing[missing >= 0])  # tampilkan semua kolom, termasuk yang 0 missing
+
+
 def load_train_data():
     download_kaggle_dataset()
     df = pd.read_csv(os.path.join(DATA_DIR, TRAIN_FILE), index_col=0)
-    # ... print info ...
+    print_dataset_info(df, TRAIN_FILE)
     return df
 
 def load_test_data():
     download_kaggle_dataset()
-    return pd.read_csv(os.path.join(DATA_DIR, TEST_FILE), index_col=0)
+    df = pd.read_csv(os.path.join(DATA_DIR, TEST_FILE), index_col=0)
+    print_dataset_info(df, TEST_FILE)
+    return df
+
+if __name__ == "__main__":
+    download_kaggle_dataset()
+    load_train_data()
+    load_test_data()

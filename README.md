@@ -26,6 +26,8 @@ Marketplace otomotif ingin membantu penjual menentukan **harga jual wajar** untu
 
 Dataset ini berisi informasi kendaraan bekas dari berbagai merek, lokasi, tahun, jarak tempuh, jenis bahan bakar, transmisi, dan spesifikasi mesin.
 
+> **Catatan:** `test-data.csv` adalah test set publik dari Kaggle dan **tidak memiliki kolom `Price`** (dipakai untuk kompetisi/submission, bukan evaluasi mandiri). Karena itu, evaluasi model pada proyek ini menggunakan hold-out set 20% yang di-split dari `train-data.csv` (lihat `src/train.py` dan `src/evaluate.py`), bukan dari `test-data.csv`.
+
 ---
 
 ## 📁 Struktur Proyek
@@ -145,6 +147,8 @@ Ikuti langkah-langkah berikut - penguji dapat mereproduksi seluruh sistem tanpa 
 
 #### Prediksi Berhasil (HTTP 200)
 
+Mac/Linux:
+
 ```bash
 curl -X POST http://localhost:8100/predict-harga \
   -H "Content-Type: application/json" \
@@ -163,18 +167,31 @@ curl -X POST http://localhost:8100/predict-harga \
   }'
 ```
 
+Windows (Command Prompt / CMD):
+
+```bat
+curl -X POST "http://localhost:8100/predict-harga" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"Year\":2015,\"Kilometers_Driven\":41000,\"Fuel_Type\":\"Diesel\",\"Transmission\":\"Manual\",\"Owner_Type\":\"First\",\"Mileage\":\"19.67 kmpl\",\"Engine\":\"1582 CC\",\"Power\":\"126.2 bhp\",\"Seats\":5.0,\"Location\":\"Pune\",\"Brand\":\"Hyundai\"}"
+```
+
 Response yang diharapkan:
 
 ```json
 {
-  "predicted_price": 12.35,
+  "predicted_price": 12.2,
+  "confidence_interval": [11.31, 13.09],
   "message": "Success"
 }
 ```
 
+`confidence_interval` dihitung dari sebaran prediksi antar pohon Random Forest (fallback ke ±MAE cross-validation untuk model lain). Setiap prediksi juga dicatat ke `reports/prediction_log.jsonl` (fitur input + hasil + timestamp) untuk keperluan pemantauan drift di kemudian hari.
+
 #### Request Tidak Valid (HTTP 422)
 
 Input dengan Fuel_Type tidak dikenal akan ditolak oleh validasi Pydantic.
+
+Mac/Linux:
 
 ```bash
 curl -X POST http://localhost:8100/predict-harga \
@@ -186,6 +203,14 @@ curl -X POST http://localhost:8100/predict-harga \
     "Transmission": "Manual",
     "Owner_Type": "First"
   }'
+```
+
+Windows (Command Prompt / CMD):
+
+```bat
+curl -X POST "http://localhost:8100/predict-harga" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"Year\":2015,\"Kilometers_Driven\":41000,\"Fuel_Type\":\"Batubara\",\"Transmission\":\"Manual\",\"Owner_Type\":\"First\"}"
 ```
 
 Response yang diharapkan (422 Unprocessable Entity):
@@ -205,9 +230,9 @@ Response yang diharapkan (422 Unprocessable Entity):
 
 ### Test Otomatis (pytest)
 
-Terdapat minimal 7 test yang mencakup:
+Terdapat 8 test yang mencakup:
 
-4 test mekanis (health check, root, prediksi valid, error handling 422).
+5 test mekanis (health check, root, prediksi valid, field wajib hilang → 422, nilai enum tak dikenal → 422).
 
 3 behavioral test (kendaraan lebih tua harus lebih murah, jarak tempuh lebih tinggi harus lebih murah).
 
@@ -223,17 +248,18 @@ Hasil yang diharapkan:
 tests/test_api.py::test_health PASSED
 tests/test_api.py::test_root PASSED
 tests/test_api.py::test_predict_valid PASSED
+tests/test_api.py::test_predict_invalid_value PASSED
 tests/test_api.py::test_predict_missing_field PASSED
 tests/test_api.py::test_predict_invalid_enum PASSED
 tests/test_api.py::test_older_car_cheaper PASSED
 tests/test_api.py::test_higher_mileage_cheaper PASSED
-==================== 7 passed in X.XXs ====================
+==================== 8 passed in X.XXs ====================
 ```
 📌 Catatan Penting 
 1. Mengapa data/ dan models/ Dimasukkan ke .gitignore?
 Folder data/ dan models/ berisi artefak yang ukurannya besar (dataset dan file model) dan dapat dihasilkan ulang kapan saja oleh kode. Jika artefak ini ikut dikomit ke Git:
 
-Repositori menjadi sangat berat (500 MB+) dan lambat di-clone.
+Repositori menjadi berat dan lambat di-clone.
 
 Risiko konflik versi (misal dataset diupdate tapi kode tidak).
 
